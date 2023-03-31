@@ -14,14 +14,14 @@ export const Header = ({ title, linkTo }: { title: string; linkTo?: string }) =>
           <>
             <Show above="md">
               <Link to={linkTo}>
-                <Button size={"sm"} colorScheme={"pink"}>
+                <Button size={"sm"} colorScheme={"pink"} bgColor={"pink.400"}>
                   CREATE NEW
                 </Button>
               </Link>
             </Show>
             <Show below="md">
               <Link to={linkTo}>
-                <Button size={"sm"} colorScheme={"pink"}>
+                <Button size={"sm"} colorScheme={"pink"} bgColor={"pink.400"}>
                   CREATE
                 </Button>
               </Link>
