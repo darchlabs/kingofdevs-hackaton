@@ -7,6 +7,7 @@ import (
 type SmartContractStorage interface {
 	ListSmartContracts(sort string, limit int64, offset int64) ([]*smartcontract.SmartContract, error)
 	InsertSmartContract(s *smartcontract.SmartContract) (*smartcontract.SmartContract, error)
+	GetEventByID(id string) (*smartcontract.SmartContract, error)
 	GetSmartContractsCount() (int64, error)
 	Stop() error
 }

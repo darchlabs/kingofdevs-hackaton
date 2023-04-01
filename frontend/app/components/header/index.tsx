@@ -5,7 +5,7 @@ import { NotificationIcon } from "../icon/notification";
 export const Header = ({ title, linkTo }: { title: string; linkTo?: string }) => {
   return (
     <HStack pt={10} mb={10} w={"full"} justifyContent={"space-between"}>
-      <Heading color={"blackAlpha.800"} fontSize={"2xl"}>
+      <Heading color={"blackAlpha.800"} fontSize={"3xl"}>
         {title}
       </Heading>
 
@@ -14,7 +14,7 @@ export const Header = ({ title, linkTo }: { title: string; linkTo?: string }) =>
           <>
             <Show above="md">
               <Link to={linkTo}>
-                <Button size={"sm"} colorScheme={"pink"} bgColor={"pink.400"}>
+                <Button size={"md"} colorScheme={"pink"} bgColor={"pink.400"}>
                   CREATE NEW
                 </Button>
               </Link>

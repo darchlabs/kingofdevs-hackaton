@@ -3,7 +3,7 @@ package metrics
 import (
 	"context"
 
-	"github.com/darchlabs/kingofdevs-hackaton/backend/internal/api/transaction"
+	"github.com/darchlabs/kingofdevs-hackaton/backend/pkg/transaction"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"

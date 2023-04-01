@@ -3,20 +3,34 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
+	"github.com/darchlabs/kingofdevs-hackaton/backend"
 	"github.com/darchlabs/kingofdevs-hackaton/backend/internal/api/metrics"
+	smartcontractsAPI "github.com/darchlabs/kingofdevs-hackaton/backend/internal/api/smartcontracts"
 	"github.com/darchlabs/kingofdevs-hackaton/backend/internal/env"
-	"github.com/darchlabs/kingofdevs-hackaton/backend/internal/storage"
+	metricDB "github.com/darchlabs/kingofdevs-hackaton/backend/internal/storage"
+	smartcontractstorage "github.com/darchlabs/kingofdevs-hackaton/backend/internal/storage/smartcontract"
 	transactionstorage "github.com/darchlabs/kingofdevs-hackaton/backend/internal/storage/transaction"
 	"github.com/darchlabs/synchronizer-v2"
-	eventdb "github.com/darchlabs/synchronizer-v2/pkg/storage"
+	eventDB "github.com/darchlabs/synchronizer-v2/pkg/storage"
 	eventstorage "github.com/darchlabs/synchronizer-v2/pkg/storage/event"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/pressly/goose/v3"
+
+	_ "github.com/darchlabs/kingofdevs-hackaton/backend/migrations"
 )
 
 var (
-	eventStorage synchronizer.EventStorage
+	eventStorage        synchronizer.EventStorage
+	smartContactStorage backend.SmartContractStorage
 )
 
 func main() {
@@ -27,30 +41,28 @@ func main() {
 		log.Fatal("invalid env values, error: ", err)
 	}
 
-	// initialize event storage
-	edb, err := eventdb.New(env.DatabaseDSN)
+	// initialize event db
+	edb, err := eventDB.New(env.DatabaseDSN)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// initialize event storage
-	evs := eventstorage.New(edb)
-
-	// TODO: is this ok?
-	// TODO: How to create the table?
-	s, err := storage.New(env.DatabaseDSN)
+	// initialize metric db
+	db, err := metricDB.New(env.DatabaseDSN)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// run backend migrations
+	err = goose.Up(db.DB.DB, env.MigrationDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// initialize storages
 	eventStorage = eventstorage.New(edb)
-	txs := transactionstorage.New(s)
-
-	// // run migrations
-	// err = goose.Up(s.DB.DB, env.MigrationDir)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	transactionStorage := transactionstorage.New(db)
+	smartContactStorage = smartcontractstorage.New(db)
 
 	// Instance client
 	client, err := ethclient.Dial(env.ClientURL)
@@ -59,7 +71,7 @@ func main() {
 	}
 
 	// Get tx hash
-	txHashArr := metrics.GetTXHashesByAddress(evs, "0x580aD6Df3AC48d5223386DbbD4042818e66606D3")
+	txHashArr := metrics.GetTXHashesByAddress(eventStorage, "0x580aD6Df3AC48d5223386DbbD4042818e66606D3")
 
 	// Get insights from the tx
 	for _, hash := range txHashArr {
@@ -67,37 +79,53 @@ func main() {
 		fmt.Println("INSIGHTS: ", txInfo)
 
 		// Insert each tx into DB
-		txs.InsertTX(txInfo)
+		transactionStorage.InsertTX(txInfo)
 	}
 
-	// smartcontractAddr := "0x00000"
-	// count, err := eventStorage.GetEventCountByAddress(smartcontractAddr)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	// initialize fiber
+	api := fiber.New()
+	api.Use(logger.New())
+	api.Use(logger.New(logger.Config{
+		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
+	}))
 
-	// events, err := eventStorage.ListEventsByAddress(smartcontractAddr, "desc", count, 0)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	// initialize routes
+	smartcontractsAPI.Route(api, smartcontractsAPI.Context{
+		Storage:      smartContactStorage,
+		EventStorage: eventStorage,
+		IDGen:        uuid.NewString,
+		DateGen:      time.Now,
+	})
 
-	// // iterar: obtener todos los event_datas por evento
-	// batch := 100
-	// offset := 0
-	// for _, e := range events {
-	// 	edCount, err := eventStorage.GetEventDataCount(smartcontractAddr, e.Abi.Name)
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// }
+	go func() {
+		api.Listen(fmt.Sprintf(":%s", env.Port))
+	}()
 
-	// events, err := eventStorage.ListAllEvents()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	// listen interrupt
+	quit := make(chan struct{})
+	listenInterrupt(quit)
+	<-quit
+	gracefullShutdown()
+}
 
-	// for _, e := range events {
-	// 	fmt.Printf("event=%+v \n", e)
-	// }
-	fmt.Println("envs", env.DatabaseDSN, env.MigrationDir, env.Port)
+// listenInterrupt method used to listen SIGTERM OS Signal
+func listenInterrupt(quit chan struct{}) {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		s := <-c
+		log.Println("Signal received", s.String())
+		quit <- struct{}{}
+	}()
+}
+
+// gracefullShutdown method used to close all synchronizer processes
+func gracefullShutdown() {
+	log.Println("Gracefully shutdown")
+
+	// close database connection
+	err := eventStorage.Stop()
+	if err != nil {
+		log.Println(err)
+	}
 }

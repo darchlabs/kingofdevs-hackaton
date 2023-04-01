@@ -1,7 +1,7 @@
 import { VscOrganization, VscPieChart, VscSettingsGear } from "react-icons/vsc";
 import { HiOutlineDocumentText } from "react-icons/hi";
 
-export const getIconBySection = (section: string) => {
+export const GetIconBySection = (section: string) => {
   switch (section.toLowerCase()) {
     case "metrics":
       return <VscPieChart size={25} />;

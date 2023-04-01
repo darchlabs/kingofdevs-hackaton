@@ -11,9 +11,9 @@ type SmartContract struct {
 	Name    string             `json:"name" db:"name" validate:"required"`
 	Network event.EventNetwork `json:"network" db:"network" validate:"required"`
 	NodeURL string             `json:"nodeURL" db:"node_url" validate:"required,url"`
-	Address string             `json:"address" db:"address" validate:"required,hexadecimal"`
+	Address string             `json:"address" db:"address" validate:"required"`
 
-	Abi    []*event.Abi   `json:"abi" validate:"required,gt=0,dive"`
+	Abi    []*event.Abi   `json:"abi,omitempty" validate:"required,gt=0,dive"`
 	Events []*event.Event `json:"events"`
 
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`

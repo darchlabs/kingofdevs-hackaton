@@ -8,6 +8,8 @@ github.com/darchlabs/synchronizer-v2 v1.8.0 h1:lP8a7/8OPvDHGmReqEXhxWK6vhaQsogbp
 github.com/darchlabs/synchronizer-v2 v1.8.0/go.mod h1:g2Iwsrklri57zbH9AbjRDmD7TZuX3JtWMypw9jVKPDA=
 github.com/darchlabs/synchronizer-v2 v1.9.0 h1:lnHaYnOEZ77xY12YhfkfgP2kWm1ENXM2rVlQtSAzb58=
 github.com/darchlabs/synchronizer-v2 v1.9.0/go.mod h1:g2Iwsrklri57zbH9AbjRDmD7TZuX3JtWMypw9jVKPDA=
+github.com/darchlabs/synchronizer-v2 v1.10.0 h1:yuafgKGMiWoZeMitRj0Xtx6U7qfEewdkNnOpvqb6xq8=
+github.com/darchlabs/synchronizer-v2 v1.10.0/go.mod h1:g2Iwsrklri57zbH9AbjRDmD7TZuX3JtWMypw9jVKPDA=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/deckarep/golang-set v1.8.0 h1:sk9/l/KqpunDwP7pSjUg0keiOOLEnOBHzykLrsPppp4=
 github.com/deckarep/golang-set v1.8.0/go.mod h1:5nI87KwE7wgsBU1F4GKAw2Qod7p5kyS383rP6+o6qqo=

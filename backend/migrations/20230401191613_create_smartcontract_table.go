@@ -19,7 +19,7 @@ func upCreateSmartcontractTable(tx *sql.Tx) error {
 			node_url TEXT NOT NULL,
 			address TEXT NOT NULL,
 			created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-			updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+			updated_at TIMESTAMP WITH TIME ZONE NOT NULL
 		)
 	`)
 
