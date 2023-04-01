@@ -8,7 +8,7 @@ frontend-dev:
 
 build-back:
 	@echo "[building backend]"
-	@docker build -t darchlabs/frontend-hackathon -f ./backend/Dockerfile --progress tty .
+	@docker build -t darchlabs/backend-hackathon -f ./backend/Dockerfile --progress tty .
 	@echo "Build darchlabs/backend-hackathon docker image done ✔︎"
 
 build-front:
