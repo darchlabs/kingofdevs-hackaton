@@ -18,24 +18,24 @@ func New(s *storage.S) *Storage {
 }
 
 func (s *Storage) InsertSmartContract(sc *smartcontract.SmartContract) (*smartcontract.SmartContract, error) {
-	// insert new event in database
+	// insert new smartcontract in database
 	var smartcontractId string
-	eventQuery := "INSERT INTO smartcontract (id, name, network, node_url, address, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id"
-	err := s.storage.DB.Get(&smartcontractId, eventQuery, sc.ID, sc.Name, sc.Network, sc.NodeURL, sc.Address, sc.CreatedAt, sc.UpdatedAt)
+	query := "INSERT INTO smartcontract (id, name, network, node_url, address, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id"
+	err := s.storage.DB.Get(&smartcontractId, query, sc.ID, sc.Name, sc.Network, sc.NodeURL, sc.Address, sc.CreatedAt, sc.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
 
-	// get created event
-	createdEvent, err := s.GetEventByID(smartcontractId)
+	// get created smartcontract
+	createdSmartcontract, err := s.GetSmartContractByID(smartcontractId)
 	if err != nil {
 		return nil, err
 	}
 
-	return createdEvent, nil
+	return createdSmartcontract, nil
 }
 
-func (s *Storage) GetEventByID(id string) (*smartcontract.SmartContract, error) {
+func (s *Storage) GetSmartContractByID(id string) (*smartcontract.SmartContract, error) {
 	// get smartcontract from db
 	sc := &smartcontract.SmartContract{}
 	err := s.storage.DB.Get(sc, "SELECT * FROM smartcontract WHERE id = $1", id)
