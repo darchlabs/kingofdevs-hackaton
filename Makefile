@@ -22,7 +22,7 @@ compose-dev:
 
 compose:
 	@echo "[compose-dev]: Running docker compose dev mode..."
-	@docker-compose -f infra/docker-compose.yml up --build
+	@docker-compose -f infra/docker-compose.yml up --scale nginx=0
 
 compose-stop:
 	@echo "[compose-stop]: Stopping docker compose dev mode..."
