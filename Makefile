@@ -8,7 +8,7 @@ frontend-dev:
 
 build-back:
 	@echo "[building backend]"
-	@docker build -t darchlabs/frontend-hackathon -f ./backend/Dockerfile --progress tty .
+	@docker build -t darchlabs/backend-hackathon -f ./backend/Dockerfile --progress tty .
 	@echo "Build darchlabs/backend-hackathon docker image done ✔︎"
 
 build-front:
@@ -20,9 +20,9 @@ compose-dev:
 	@echo "[compose-dev]: Running docker compose dev mode..."
 	@docker-compose -f infra/docker-compose.yml up sync postgres
 
-compose:
+compose: build-back
 	@echo "[compose-dev]: Running docker compose dev mode..."
-	@docker-compose -f infra/docker-compose.yml up --build
+	@docker-compose -f infra/docker-compose.yml up
 
 compose-stop:
 	@echo "[compose-stop]: Stopping docker compose dev mode..."

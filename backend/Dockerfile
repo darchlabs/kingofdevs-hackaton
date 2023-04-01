@@ -7,7 +7,9 @@ COPY . .
 
 RUN ls -l
 
-RUN go build -o metrics cmd/metrics/main.go
+ENV GOPATH /usr/src/app
+
+RUN go build -o metrics backend/cmd/metrics/main.go
 
 ## Prepare running env
 FROM golang:1.19 AS runner
