@@ -22,7 +22,7 @@ compose-dev:
 
 compose: build-back
 	@echo "[compose-dev]: Running docker compose dev mode..."
-	@docker-compose -f infra/docker-compose.yml up
+	@docker-compose -f infra/docker-compose.yml up --scale nginx=0
 
 compose-stop:
 	@echo "[compose-stop]: Stopping docker compose dev mode..."
