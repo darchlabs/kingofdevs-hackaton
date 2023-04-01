@@ -1,6 +1,6 @@
 backend-dev:
 	@echo "[dev] Running Backend..."
-	@export $$(cat backend/.env) && cd backend && go run cmd/smartcontracts/main.go
+	@export $$(cat backend/.env) && cd backend && go run cmd/main.go
 
 frontend-dev:
 	@echo "[dev] Running Frontend..."
