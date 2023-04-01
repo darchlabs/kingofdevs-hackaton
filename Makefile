@@ -20,7 +20,7 @@ compose-dev:
 	@echo "[compose-dev]: Running docker compose dev mode..."
 	@docker-compose -f infra/docker-compose.yml up sync postgres
 
-compose:
+compose: build-back
 	@echo "[compose-dev]: Running docker compose dev mode..."
 	@docker-compose -f infra/docker-compose.yml up --scale nginx=0
 
