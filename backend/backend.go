@@ -2,6 +2,7 @@ package backend
 
 import (
 	"github.com/darchlabs/kingofdevs-hackaton/backend/pkg/smartcontract"
+	"github.com/darchlabs/kingofdevs-hackaton/backend/pkg/transaction"
 )
 
 type SmartContractStorage interface {
@@ -10,4 +11,11 @@ type SmartContractStorage interface {
 	GetEventByID(id string) (*smartcontract.SmartContract, error)
 	GetSmartContractsCount() (int64, error)
 	Stop() error
+}
+
+type TransactionStorage interface {
+	ListTxs() ([]*transaction.Transaction, error)
+	GetTxById(id string) (*transaction.Transaction, error)
+	InsertTx(t *transaction.Transaction) (*transaction.Transaction, error)
+	UpdateTx(t *transaction.Transaction) (*transaction.Transaction, error)
 }
