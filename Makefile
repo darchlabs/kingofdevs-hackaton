@@ -20,6 +20,10 @@ compose-dev:
 	@echo "[compose-dev]: Running docker compose dev mode..."
 	@docker-compose -f infra/docker-compose.yml up sync postgres
 
+compose:
+	@echo "[compose-dev]: Running docker compose dev mode..."
+	@docker-compose -f infra/docker-compose.yml up --build
+
 compose-stop:
 	@echo "[compose-stop]: Stopping docker compose dev mode..."
 	@docker-compose -f infra/docker-compose.yml down
