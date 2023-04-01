@@ -3,9 +3,8 @@ package transactionstorage
 import (
 	"fmt"
 
-	"github.com/darchlabs/kingofdevs-hackaton/backend/internal/api/transaction"
 	"github.com/darchlabs/kingofdevs-hackaton/backend/internal/storage"
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/darchlabs/kingofdevs-hackaton/backend/pkg/transaction"
 )
 
 type Storage struct {
@@ -18,7 +17,7 @@ func New(s *storage.S) *Storage {
 	}
 }
 
-func (s *Storage) ListAllTXs() ([]*transaction.Transaction, error) {
+func (s *Storage) ListTxs() ([]*transaction.Transaction, error) {
 	// define events response
 	txs := []*transaction.Transaction{}
 
@@ -32,13 +31,13 @@ func (s *Storage) ListAllTXs() ([]*transaction.Transaction, error) {
 	return txs, nil
 }
 
-func (s *Storage) GetTXByHash(hash common.Hash) (*transaction.Transaction, error) {
+func (s *Storage) GetTxById(id string) (*transaction.Transaction, error) {
 	// define events response
 	tx := &transaction.Transaction{}
 
 	// get txs from db
-	eventQuery := "SELECT * FROM transaction WHERE TX = $1"
-	err := s.storage.DB.Select(&tx, eventQuery)
+	eventQuery := "SELECT * FROM transaction WHERE id = $1"
+	err := s.storage.DB.Get(&tx, eventQuery, id)
 	if err != nil {
 		return nil, err
 	}
@@ -47,83 +46,63 @@ func (s *Storage) GetTXByHash(hash common.Hash) (*transaction.Transaction, error
 
 }
 
-func (s *Storage) InsertTX(t *transaction.Transaction) (*transaction.Transaction, error) {
+func (s *Storage) InsertTx(t *transaction.Transaction) (*transaction.Transaction, error) {
 	// check if already existe an event with the same address and name
-	ev, err := s.GetTXByHash(t.TX)
-	if err != nil {
-		return nil, fmt.Errorf("%s", err)
+	tx, _ := s.GetTxById(t.ID)
+	if tx != nil {
+		return nil, fmt.Errorf("transaction already exists with hash=%s", t.Tx)
 	}
 
-	if ev != nil {
-		return nil, fmt.Errorf("event already exists with this hash=%s", t.TX)
-	}
-
-	// prepare db for creating a tx on it
-	tx, err := s.storage.DB.Beginx()
-	if err != nil {
-		return nil, err
-	}
+	fmt.Println("a")
 
 	// insert new event in database
 	var txID string
-	eventQuery := "INSERT INTO transaction (tx, from, from_balance, contract_balance, gas_paid, gas_price, gas_cost, from_is_whale, tx_succeded, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING tx"
-	err = tx.Get(&txID, eventQuery, t.TX, t.From, t.FromBalance, t.ContractBalance, t.GasPaid, t.GasPrice, t.GasCost, t.FromIsWhale, t.TXSucceded, t.UpdatedAt)
+	eventQuery := "INSERT INTO transaction (id, tx, from, from_balance, contract_balance, gas_paid, gas_price, gas_cost, from_is_whale, tx_succeded, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING tx"
+	err := s.storage.DB.Get(&txID, eventQuery, t.ID, t.Tx, t.From, t.FromBalance, t.ContractBalance, t.GasPaid, t.GasPrice, t.GasCost, t.FromIsWhale, t.TxSucceded, t.CreatedAt, t.UpdatedAt)
 	if err != nil {
-		tx.Rollback()
 		return nil, err
 	}
 
-	// commit transaction
-	err = tx.Commit()
-	if err != nil {
-		return nil, err
-	}
+	fmt.Println("c")
+
+	//
+	// show txID !!!!
+	//
 
 	// get created event
-	createdTX, err := s.GetTXByHash(common.HexToHash(txID))
+	created, err := s.GetTxById(txID)
 	if err != nil {
 		return nil, err
 	}
 
-	return createdTX, nil
+	fmt.Println("d")
+
+	return created, nil
 }
 
-func (s *Storage) UpdateTX(t *transaction.Transaction) (*transaction.Transaction, error) {
+func (s *Storage) UpdateTx(t *transaction.Transaction) (*transaction.Transaction, error) {
 	// check if already existe an event with the same address and name
-	ev, err := s.GetTXByHash(t.TX)
+	ev, err := s.GetTxById(t.Tx)
 	if err != nil {
-		return nil, fmt.Errorf("%s", err)
+		return nil, err
 	}
 
 	if ev == nil {
 		return nil, fmt.Errorf("%s", "tx does not exists on the db")
 	}
 
-	// prepare db for creating a tx on it
-	tx, err := s.storage.DB.Beginx()
-	if err != nil {
-		return nil, err
-	}
-
 	// update tx on db
 	query := "UPDATE transaction SET network = $1, node_url = $2, address = $3, latest_block_number = $4, abi_id = $5, status = $6, error = $7, updated_at = $8 WHERE id = $9"
-	_, err = tx.Exec(query, t.TX, t.From, t.FromBalance, t.ContractBalance, t.GasPaid, t.GasPrice, t.GasCost, t.FromIsWhale, t.TXSucceded, t.UpdatedAt)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	// commit transaction
-	err = tx.Commit()
+	_, err = s.storage.DB.Exec(query, t.Tx, t.From, t.FromBalance, t.ContractBalance, t.GasPaid, t.GasPrice, t.GasCost, t.FromIsWhale, t.TxSucceded, t.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
 
 	// get created event
-	createdTX, err := s.GetTXByHash(t.TX)
+	created, err := s.GetTxById(t.Tx)
 	if err != nil {
 		return nil, err
 	}
 
-	return createdTX, nil
+	return created, nil
 }
