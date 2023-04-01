@@ -17,7 +17,7 @@ services:
       - 9000:9000
     restart: on-failure
     depends_on:
-      - synchronizer
+      - sync
 
   # Dependencies
   postgres:
@@ -29,7 +29,7 @@ services:
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
 
-  synchronizer:
+  sync:
     image: darchlabs/synchronizer-v2:1.8.0
     ports:
       - 5555:5555

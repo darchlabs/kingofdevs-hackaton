@@ -18,7 +18,7 @@ build-front:
 
 compose-dev:
 	@echo "[compose-dev]: Running docker compose dev mode..."
-	@docker-compose -f infra/docker-compose.yml up --build
+	@docker-compose -f infra/docker-compose.yml up sync postgres
 
 compose-stop:
 	@echo "[compose-stop]: Stopping docker compose dev mode..."
