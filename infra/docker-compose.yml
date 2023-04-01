@@ -1,5 +1,25 @@
 version: "3.9"
 services:
+  # Services
+  frontend:
+    image: darchlabs/frontend-hackathon
+    ports:
+      - 3000:3000
+    restart: on-failure
+    environment:
+      BACKEND_URL: backend:9000
+    depends_on:
+      - backend
+
+  backend:
+    image: darchlabs/backend-hackathon
+    ports:
+      - 9000:9000
+    restart: on-failure
+    depends_on:
+      - synchronizer
+
+  # Dependencies
   postgres:
     image: postgres:latest
     ports:
@@ -13,8 +33,11 @@ services:
     image: darchlabs/synchronizer-v2:1.8.0
     ports:
       - 5555:5555
-    env_file:
-      - synchronizers.env
+    restart: always
+    environment:
+      INTERVAL_SECONDS: 20
+      PORT: 5555
+      MIGRATION_DIR: migrations
+      DATABASE_DSN: postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable
     depends_on:
       - postgres
-    restart: always
