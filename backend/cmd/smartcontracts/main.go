@@ -9,9 +9,10 @@ import (
 	"time"
 
 	"github.com/darchlabs/kingofdevs-hackaton/backend"
-	"github.com/darchlabs/kingofdevs-hackaton/backend/internal/api/metrics"
+	metricsAPI "github.com/darchlabs/kingofdevs-hackaton/backend/internal/api/metrics"
 	smartcontractsAPI "github.com/darchlabs/kingofdevs-hackaton/backend/internal/api/smartcontracts"
 	"github.com/darchlabs/kingofdevs-hackaton/backend/internal/env"
+	metricsengine "github.com/darchlabs/kingofdevs-hackaton/backend/internal/metrics-engine"
 	metricDB "github.com/darchlabs/kingofdevs-hackaton/backend/internal/storage"
 	smartcontractstorage "github.com/darchlabs/kingofdevs-hackaton/backend/internal/storage/smartcontract"
 	transactionstorage "github.com/darchlabs/kingofdevs-hackaton/backend/internal/storage/transaction"
@@ -70,17 +71,8 @@ func main() {
 		log.Fatal("invalid env values, error: ", err)
 	}
 
-	// Get tx hash
-	txHashArr := metrics.GetTXHashesByAddress(eventStorage, "0x580aD6Df3AC48d5223386DbbD4042818e66606D3")
-
-	// Get insights from the tx
-	for _, hash := range txHashArr {
-		txInfo := metrics.GetTransaction(client, hash)
-		fmt.Println("INSIGHTS: ", txInfo)
-
-		// Insert each tx into DB
-		transactionStorage.InsertTX(txInfo)
-	}
+	// initialize metrics
+	m := metricsengine.New(client, eventStorage, transactionStorage, uuid.NewString, time.Now)
 
 	// initialize fiber
 	api := fiber.New()
@@ -96,6 +88,28 @@ func main() {
 		IDGen:        uuid.NewString,
 		DateGen:      time.Now,
 	})
+	metricsAPI.Route(api, metricsAPI.Context{
+		Metrics: m,
+	})
+
+	// example: use metric.GetTXHashesByAddress
+	txHashArr, err := m.GetTXHashesByAddress("0xc13530546feA5fC787A2d126bB39bDeC20C4cc9e")
+	if err != nil {
+		log.Fatal("invalid env values, error: ", err)
+	}
+
+	fmt.Println("TX_HASH_ARR", txHashArr)
+
+	// Get insights from the tx
+	for _, hash := range txHashArr {
+		txInfo, err := m.GetTransaction(hash)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("INSIGHTS: ", txInfo)
+
+		break
+	}
 
 	go func() {
 		api.Listen(fmt.Sprintf(":%s", env.Port))
