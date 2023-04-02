@@ -16,7 +16,7 @@ func upCreateSmartcontractEventTable(tx *sql.Tx) error {
 			id TEXT PRIMARY KEY,
 			smartcontract_id TEXT NOT NULL,
 			event_id TEXT NOT NULL,
-			created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+			created_at TIMESTAMP WITH TIME ZONE NOT NULL
 		)
 	`)
 

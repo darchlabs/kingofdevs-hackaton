@@ -3,7 +3,7 @@ import { Box, Text, Image, VStack, HStack, Flex, useMediaQuery } from "@chakra-u
 
 import { LogoIcon } from "../icon/logo";
 import { LogoSquareIcon } from "../icon/logo-square";
-import { getIconBySection } from "../../utils/get-icon-by-section";
+import { GetIconBySection } from "../../utils/get-icon-by-section";
 import { Items } from "./data";
 
 export function Sidebar() {
@@ -40,7 +40,7 @@ export function Sidebar() {
                 borderBottomColor={"blackAlpha.200"}
               >
                 <Flex pl={6} pr={6} justifyContent={"center"} alignItems={"center"} alignContent="center">
-                  {getIconBySection(item.path)}
+                  {GetIconBySection(item.path)}
                 </Flex>
                 {AboveToLg ? <Text fontSize={"md"}>{item.section}</Text> : null}
               </HStack>
