@@ -18,4 +18,6 @@ type TransactionStorage interface {
 	GetTxById(id string) (*transaction.Transaction, error)
 	InsertTx(t *transaction.Transaction) (*transaction.Transaction, error)
 	UpdateTx(t *transaction.Transaction) (*transaction.Transaction, error)
+	ListTotalAddresses(contractAddr string) (*int64, error)
+	GetTVL(contractAddr string) (*int64, error)
 }

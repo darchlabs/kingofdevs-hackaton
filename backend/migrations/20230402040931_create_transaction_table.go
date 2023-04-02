@@ -14,6 +14,7 @@ func upCreateTransactionTable(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		CREATE TABLE transaction (
 			id TEXT NOT NULL PRIMARY KEY,
+			contract_addr TEXT NOT NULL,
 			tx TEXT NOT NULL,
 			from_addr TEXT NOT NULL,
 			from_balance decimal(38, 0) NOT NULL,

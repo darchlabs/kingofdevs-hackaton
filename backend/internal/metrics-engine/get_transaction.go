@@ -9,11 +9,13 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-func (m *Metric) GetTransaction(txHash common.Hash) (*transaction.Transaction, error) {
-	tx, _, err := m.client.TransactionByHash(context.Background(), txHash)
+func (m *Metric) GetTransaction(txHash string) (*transaction.Transaction, error) {
+	tx, _, err := m.client.TransactionByHash(context.Background(), common.HexToHash(txHash))
 	if err != nil {
 		return nil, err
 	}
+
+	contractAddress := tx.To().String()
 
 	fromAddress, err := types.Sender(types.NewEIP155Signer(tx.ChainId()), tx)
 	if err != nil {
@@ -31,37 +33,22 @@ func (m *Metric) GetTransaction(txHash common.Hash) (*transaction.Transaction, e
 		return nil, err
 	}
 
-	isWhale := false
 	whaleLimit := int64(10000)
-	if fromBalance.Int64() > whaleLimit {
-		isWhale = true
-	}
-
-	fmt.Println("555", &transaction.Transaction{
-		ID:              m.idGen(),
-		Tx:              txHash.Hex(),
-		From:            fromAddress.Hex(),
-		FromBalance:     fromBalance,
-		ContractBalance: contractBalance,
-		GasPaid:         tx.Gas(),
-		GasPrice:        tx.GasPrice(),
-		GasCost:         tx.Cost(),
-		FromIsWhale:     isWhale,
-		CreatedAt:       m.dateGen(),
-		UpdatedAt:       m.dateGen(),
-	})
+	isWhale := fromBalance.Int64() > whaleLimit
 
 	// insert transaction in db
 	t, err := m.transactionstorage.InsertTx(&transaction.Transaction{
 		ID:              m.idGen(),
-		Tx:              txHash.Hex(),
-		From:            fromAddress.Hex(),
-		FromBalance:     fromBalance,
-		ContractBalance: contractBalance,
-		GasPaid:         tx.Gas(),
-		GasPrice:        tx.GasPrice(),
-		GasCost:         tx.Cost(),
+		ContractAddr:    contractAddress,
+		Tx:              txHash,
+		FromAddr:        fromAddress.Hex(),
+		FromBalance:     fromBalance.String(),
+		ContractBalance: contractBalance.String(),
+		GasPaid:         fmt.Sprint(tx.Gas()),
+		GasPrice:        tx.GasPrice().String(),
+		GasCost:         tx.Cost().String(),
 		FromIsWhale:     isWhale,
+		TxSucceded:      true,
 		CreatedAt:       m.dateGen(),
 		UpdatedAt:       m.dateGen(),
 	})
