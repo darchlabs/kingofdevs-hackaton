@@ -5,7 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func totalAddressesHandler(ctx Context) func(c *fiber.Ctx) error {
+func TVLHandler(ctx Context) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		c.Accepts("application/json")
 
@@ -23,7 +23,7 @@ func totalAddressesHandler(ctx Context) func(c *fiber.Ctx) error {
 			})
 		}
 
-		totalAddresses, err := ctx.Metrics.GetTotalAddresses(contract.Address)
+		tvl, err := ctx.Metrics.GetTVL(contract.Address)
 		if err != nil {
 			return c.Status(fiber.StatusOK).JSON(api.Response{
 				Error: err.Error(),
@@ -32,7 +32,7 @@ func totalAddressesHandler(ctx Context) func(c *fiber.Ctx) error {
 
 		// prepare response
 		return c.Status(fiber.StatusOK).JSON(api.Response{
-			Data: totalAddresses,
+			Data: tvl,
 		})
 	}
 }

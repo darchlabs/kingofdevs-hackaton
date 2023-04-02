@@ -15,6 +15,7 @@ type Metric struct {
 	client             *ethclient.Client
 	eventStorage       synchronizer.EventStorage
 	transactionstorage backend.TransactionStorage
+	contactStorage     backend.SmartContractStorage
 	idGen              idGenerator
 	dateGen            dateGenerator
 }

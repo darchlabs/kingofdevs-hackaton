@@ -92,23 +92,53 @@ func main() {
 		Metrics: m,
 	})
 
-	// example: use metric.GetTXHashesByAddress
-	txHashArr, err := m.GetTXHashesByAddress("0xc13530546feA5fC787A2d126bB39bDeC20C4cc9e")
+	// Get all of the address from the events table
+	events, err := eventStorage.ListAllEvents()
+
+	// Get all of the hashes from the events table
+	var allEventsAddresses []string
+	for _, ev := range events {
+		allEventsAddresses = append(allEventsAddresses, ev.Address)
+	}
+
+	// Get all of the events hashes
+	txHashArr, err := m.GetTXHashesByAddresses(allEventsAddresses)
+	if err != nil {
+		log.Fatal("invalid env values, error: ", err)
+	}
+	// Update them on a map for comparing with the transactions table hashes
+	allEventsHashes := make(map[string]bool)
+	for _, hash := range txHashArr {
+		allEventsHashes[hash] = true
+	}
+
+	// Get the current hashes from the transaction table
+	currentHashes, err := transactionStorage.ListCurrentHashes()
 	if err != nil {
 		log.Fatal("invalid env values, error: ", err)
 	}
 
-	fmt.Println("TX_HASH_ARR", txHashArr)
-
-	// Get insights from the tx
-	for _, hash := range txHashArr {
-		txInfo, err := m.GetTransaction(hash)
-		if err != nil {
-			log.Fatal(err)
+	// Compare if we already have this hashes
+	for _, currentHash := range *currentHashes {
+		// Delete the hashes that we already have in the db
+		if allEventsHashes[currentHash] {
+			delete(allEventsHashes, currentHash)
 		}
-		fmt.Println("INSIGHTS: ", txInfo)
+	}
 
-		break
+	// check if there are hashes that we don't have yet
+	if len(allEventsHashes) > 0 {
+		// Get insights from the tx that we don't have yet
+		for missingHashes, _ := range allEventsHashes {
+			// Get and update the missing on the transaction table
+			txInfo, err := m.GetTransaction(missingHashes)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Println("INSIGHTS: ", txInfo)
+		}
+
 	}
 
 	go func() {
